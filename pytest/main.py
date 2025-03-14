@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import base64
 import io
 from PIL import Image
@@ -92,6 +92,28 @@ def get_population_checkpoint():
         for i in range(selected_number)
     ]
     return jsonify(results)
+
+@app.route('/filter_gaussians_by_region', methods=['POST'])
+def filter_gaussians_by_region():
+    data=request.json
+    print("get_population_checkpoint")
+    print(data)
+
+    id_list = [1, 2, 3, 4]
+
+    # 返回 JSON 响应
+    return jsonify(id_list)
+@app.route('/export_tf_video',methods=['POST'])
+def export_tf_video():
+    audio_path = 'C:/Users/liuha/Desktop/背景音/风居住的街道.mp3'  # 替换为你的音频文件路径
+
+    # 使用 send_file 返回文件
+    return send_file(
+        audio_path,
+        mimetype='audio/mpeg',  # 设置 MIME 类型为 MP3
+        as_attachment=True,  # 设置为附件下载
+        download_name='transfer_function_audio.mp3'  # 设置下载文件名
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -2,12 +2,17 @@
   <div id="app">
     <div class="input-and-checkpoint">
       <!--检查点组件-->
-      <CheckPoint @change-step="currentStepChange"/>
+      <CheckPoint :currentStep="currentStep" @change-step="currentStepChange" ref="checkPoint"/>
       <!-- 输入组件 -->
       <TextInput @submitText="handleSubmitText"/>
     </div>
     <!-- 结果展示组件 -->
-    <ExplorationResults :results="results" :separateResults="separateResults" @activeImageChanged="activeImageChanged" @activeGaussianChanged="activeGaussianChanged" />
+    <ExplorationResults :results="results" :separateResults="separateResults" :filterResults="filterResults" 
+    @activeImageChanged="activeImageChanged" 
+    @activeGaussianChanged="activeGaussianChanged"
+    @filterGaussian="handleFilterGaussians"
+    />
+    <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
   </div>
 </template>
 
@@ -15,12 +20,14 @@
 import TextInput from './components/TextInput.vue';
 import ExplorationResults from './components/ExplorationResults.vue';
 import CheckPoint from './components/CheckPoint.vue';
+import ExportVedio from './components/ExportVedio.vue';
 
 export default {
   components: {
     TextInput,
     ExplorationResults,
     CheckPoint,
+    ExportVedio,
   },
   data() {
     return {
@@ -29,7 +36,8 @@ export default {
       userInput: '', // 用户输入的文本
       activeId: 0, // 当前激活的TF的ID
       activeGaussianId: [], // 当前激活的高斯的ID
-      currentStep: 1, // 当前步骤
+      filterResults:[],  // api6过滤后的高斯结果
+      currentStep: 0, // 当前步骤
     };
   },
   methods: {
@@ -42,28 +50,35 @@ export default {
     },
     currentStepChange(step) {
       this.currentStep=step;
-      console.log(step);
       this.getPopulationCheckpoint(); // 切换step时刷新
     },
 
     async handleSubmitText(text) {
       this.userInput = text;
+      let sort=0;
+      console.log(this.activeGaussianId);
       if(this.userInput===''){
         if(this.activeGaussianId.length!=this.separateResults.length){
           alert('请输入文本');
+          return;
         }
         else{
           this.handleGetExplorationResults();//explore
+          sort=1;
         }
       }
       else{
         if(this.activeGaussianId.length===this.separateResults.length){
           this.handleGetTextStyleGuideResults();//text guide
+          sort=2;
         }
         else{
           this.handleTextRegionGuide(); //text and region guide
+          sort=3;
         }
       }
+      this.currentStep+=1; // 切换step
+      this.$refs.checkPoint.addCheckPoint(sort); // 添加检查点
     },
 
     // api 1
@@ -147,6 +162,30 @@ export default {
       }
     },
 
+    //api6
+    async handleFilterGaussians(actualMarker){
+      try{
+        const response = await fetch('http://127.0.0.1:5000/filter_gaussians_by_region', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            region:actualMarker,
+            tfparams: this.results[this.activeId], // 发送当前激活的TFparams
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        this.filterResults = data; // 更新高斯过滤结果
+      }catch(error){
+        console.error('Error fetching filtered gaussians:', error);
+        alert('Failed to fetch filtered gaussians. Please check the server URL and try again.');
+      }
+    },
+
     //api 7
     async handleTextRegionGuide() {
       try {
@@ -203,6 +242,39 @@ export default {
         console.error('Error fetching population checkpoint:', error);
         alert('Failed to fetch population checkpoint. Please check the server URL and try again.');
       }
+    },
+    //api9
+    async handleExportVideo(){
+      try{
+        const response = await fetch('http://127.0.0.1:5000/export_tf_video', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tfparams: this.results[this.activeId], // 发送当前激活的TFparams
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const blob=await response.blob();
+
+        const url=window.URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.style.display='none';
+        a.href=url;
+        a.download='tf_video.mp4';
+
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }catch(error){
+        console.error('Error exporting video:', error);
+        alert('Failed to export video. Please check the server URL and try again.');
+      };
     },
   },
   mounted() {

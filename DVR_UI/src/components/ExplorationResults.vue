@@ -52,6 +52,10 @@ export default {
       type: Array,
       required: true,
     },
+    filterResults:{
+      type:Array,
+      required:true,
+    },
   },
   data() {
     return {
@@ -72,10 +76,20 @@ export default {
     },
     // 监听 separateResults 的变化
     separateResults(newSeparateResults) {
-      if (newSeparateResults.length > 0) {
-        this.activeGaussians = []; // 默认选中第一张高斯分解图片
-      }
+      this.activeGaussians = [];
+      this.$emit('activeGaussianChanged', this.activeGaussians);
     },
+    filterResults(newFilterResults){
+      if (newFilterResults && newFilterResults.length > 0) {
+        // 将新 ID 合并到 activeGaussians 中
+        newFilterResults.forEach((id) => {
+          if (!this.activeGaussians.includes(id)) {
+            this.activeGaussians.push(id);
+          }
+        });
+      }
+      this.$emit('activeGaussianChanged', this.activeGaussians);
+    }
   },
   methods: {
     setActiveImage(id) {
@@ -115,6 +129,7 @@ export default {
       // 更新标记点的位置
       this.marker = { x , y };
       this.actualMarker={x:x*scaleX,y:y*scaleY};
+      this.$emit('filterGaussian', this.actualMarker);
     }
   },
   mounted() {
