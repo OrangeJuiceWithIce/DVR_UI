@@ -245,6 +245,10 @@ export default {
     },
     //api9
     async handleExportVideo(){
+      if(this.results.length===0){
+        alert("无可用的TFparam")
+        return;
+      }
       try{
         const response = await fetch('http://127.0.0.1:5000/export_tf_video', {
           method: 'POST',
@@ -279,6 +283,8 @@ export default {
   },
   mounted() {
     this.handleGetExplorationResults(); // 页面加载时发起请求
+    this.currentStep+=1; // 切换step
+    this.$refs.checkPoint.addCheckPoint(1); // 添加检查点
   },
 };
 </script>
