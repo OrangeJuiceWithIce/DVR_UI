@@ -4,9 +4,12 @@ import io
 from PIL import Image
 import numpy as np
 from flask_cors import CORS
+import time  # 导入 time 模块用于延时
 
 app = Flask(__name__)
 CORS(app)
+
+
 # 模拟的图片数据
 def generate_mock_image():
     # 生成一个随机的图片
@@ -17,6 +20,7 @@ def generate_mock_image():
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
     return img_str
 
+
 # 模拟的后端数据
 @app.route('/get_exploration_results', methods=['POST'])
 def get_exploration_results():
@@ -24,14 +28,19 @@ def get_exploration_results():
     selected_number = data.get('selected_number', 4)  # 默认值为 4
     print("get_exploration_results")
     print(data)
+
+    # 添加 10 秒延时
+    time.sleep(10)
+
     results = [
         {
             "id": i + 2,
-            "image": "data:image/png;base64,"+generate_mock_image()
+            "image":  generate_mock_image()
         }
         for i in range(selected_number)
     ]
-    return jsonify(results)
+    return jsonify({'results':results})
+
 
 @app.route('/get_text_style_guide_results', methods=['POST'])
 def get_text_style_guide_results():
@@ -39,14 +48,19 @@ def get_text_style_guide_results():
     selected_number = data.get('selected_number', 4)  # 默认值为 4
     print("get_text_style_guide")
     print(data)
+
+    # 添加 10 秒延时
+    time.sleep(10)
+
     results = [
         {
             "id": i + 2,
-            "image": "data:image/png;base64,"+generate_mock_image()
+            "image":  generate_mock_image()
         }
         for i in range(selected_number)
     ]
-    return jsonify(results)
+    return jsonify({'results':results})
+
 
 @app.route('/get_seperate_gaussians', methods=['POST'])
 def get_seperate_gaussians():
@@ -54,14 +68,19 @@ def get_seperate_gaussians():
     data = request.json
     print("get_seperate_gaussians")
     print(data)
+
+    # 添加 10 秒延时
+    time.sleep(10)
+
     results = [
         {
             "id": i + 1,
-            "image": "data:image/png;base64,"+generate_mock_image()
+            "image":  generate_mock_image()
         }
         for i in range(selected_number)
     ]
-    return jsonify(results)
+    return jsonify({'results':results})
+
 
 @app.route('/get_text_region_guide_results', methods=['POST'])
 def get_text_region_guide_results():
@@ -69,14 +88,19 @@ def get_text_region_guide_results():
     data = request.json
     print("get_text_region_guide")
     print(data)
+
+    # 添加 10 秒延时
+    time.sleep(10)
+
     results = [
         {
             "id": i + 2,
-            "image": "data:image/png;base64,"+generate_mock_image()
+            "image":  generate_mock_image()
         }
         for i in range(selected_number)
     ]
-    return jsonify(results)
+    return jsonify({'results':results})
+
 
 @app.route('/get_population_checkpoint', methods=['POST'])
 def get_population_checkpoint():
@@ -84,36 +108,48 @@ def get_population_checkpoint():
     data = request.json
     print("get_population_checkpoint")
     print(data)
+
+    # 添加 10 秒延时
+    time.sleep(10)
+
     results = [
         {
             "id": i + 1,
-            "image": "data:image/png;base64,"+generate_mock_image()
+            "image":  generate_mock_image()
         }
         for i in range(selected_number)
     ]
-    return jsonify(results)
+    return jsonify({'results':results})
+
 
 @app.route('/filter_gaussians_by_region', methods=['POST'])
 def filter_gaussians_by_region():
-    data=request.json
-    print("get_population_checkpoint")
+    data = request.json
+    print("filter_gaussians_by_region")
     print(data)
 
-    id_list = [1, 2, 3, 4]
+    # 添加 10 秒延时
+    time.sleep(10)
 
-    # 返回 JSON 响应
-    return jsonify(id_list)
-@app.route('/export_tf_video',methods=['POST'])
+    id_list = [1, 2, 3, 4]
+    return jsonify({'gaussian_ids':id_list})
+
+
+@app.route('/export_tf_video', methods=['POST'])
 def export_tf_video():
     audio_path = 'C:/Users/liuha/Desktop/背景音/风居住的街道.mp3'  # 替换为你的音频文件路径
+    print("export_tf_video")
 
-    # 使用 send_file 返回文件
+    # 添加 10 秒延时
+    time.sleep(10)
+
     return send_file(
         audio_path,
-        mimetype='audio/mpeg',  # 设置 MIME 类型为 MP3
-        as_attachment=True,  # 设置为附件下载
-        download_name='transfer_function_audio.mp3'  # 设置下载文件名
+        mimetype='audio/mpeg',
+        as_attachment=True,
+        download_name='transfer_function_audio.mp3'
     )
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

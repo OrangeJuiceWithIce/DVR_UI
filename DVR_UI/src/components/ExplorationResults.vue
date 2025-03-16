@@ -9,13 +9,13 @@
         :class="{ active: result.id === activeId }"
         @click="setActiveImage(result.id)"
       >
-        <img :src="result.image" alt="Thumbnail" class="thumbnail">
+        <img :src="'data:image/*;base64,'+result.image" alt="Thumbnail" class="thumbnail">
       </div>
     </div>
 
     <!-- 主图展示 -->
     <div class="main-image" @click="addMarker($event)">
-      <img :src="activeImage" alt="Main Image" class="main-image-content">
+      <img :src="'data:image/*;base64,'+activeImage" alt="Main Image" class="main-image-content">
       <!-- 动态显示标记点 -->
       <div
         v-if="marker"
@@ -34,7 +34,7 @@
           :class="{ active: activeGaussians.includes(gaussian.id) }"
           @click="setActiveGaussian(gaussian.id)"
         >
-          <img :src="gaussian.image" alt="Gaussian Image" class="gaussian-image">
+          <img :src="'data:image/*;base64,'+gaussian.image" alt="Gaussian Image" class="gaussian-image">
         </div>
       </div>
     </div>

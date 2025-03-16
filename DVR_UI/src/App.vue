@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div v-if="isLoading!=0" class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
     <div class="input-and-checkpoint">
       <!--检查点组件-->
       <CheckPoint :currentStep="currentStep" @change-step="currentStepChange" ref="checkPoint"/>
@@ -38,6 +41,8 @@ export default {
       activeGaussianId: [], // 当前激活的高斯的ID
       filterResults:[],  // api6过滤后的高斯结果
       currentStep: 0, // 当前步骤
+
+      isLoading:0, // 不在加载中
     };
   },
   methods: {
@@ -84,7 +89,8 @@ export default {
     // api 1
     async handleGetExplorationResults() {
       try {
-        const response = await fetch('http://127.0.0.1:5000/get_exploration_results', {
+        this.isLoading+=1;
+        const response = await fetch('http://10.130.136.14:48661/api/get_exploration_results', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -99,18 +105,21 @@ export default {
         }
 
         const data = await response.json();
-        this.results = data; // 更新结果数据
-        this.handleSeparateGaussians(0); // 默认分割第一个TF的高斯
+        this.results = data.results; // 更新结果数据
+        await this.handleSeparateGaussians(0); // 默认分割第一个TF的高斯
       } catch (error) {
         console.error('Error fetching initial exploration results:', error);
         alert('Failed to load initial results. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
       }
     },
 
     //api 2
     async handleGetTextStyleGuideResults(){
+      this.isLoading+=1;
       try {
-          const response = await fetch('http://127.0.0.1:5000/get_text_style_guide_results', {
+          const response = await fetch('http://10.130.136.14:48661/api/get_text_style_guide_results', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -127,20 +136,23 @@ export default {
           }
   
           const data = await response.json();
-          this.results = data; // 更新结果数据
+          this.results = data.results; // 更新结果数据
           if (data.length > 0) {
-            this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
+            await this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
           }
         } catch (error) {
           console.error('Error submitting text:', error);
           alert('Failed to submit text. Please check the server URL and try again.');
+        }finally{
+          this.isLoading-=1;
         }
     },
 
     //api 5
     async handleSeparateGaussians() {
+      this.isLoading+=1;
       try {
-        const response = await fetch('http://127.0.0.1:5000/get_seperate_gaussians', {
+        const response = await fetch('http://10.130.136.14:48661/api/get_seperate_gaussians', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -149,23 +161,27 @@ export default {
             tfparams: this.results[this.activeId], // 发送 activeId 到后端
           }),
         });
+        console.log(this.results[this.activeId]);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        this.separateResults = data; // 更新高斯分解结果
+        this.separateResults = data.results; // 更新高斯分解结果
       } catch (error) {
         console.error('Error fetching gaussian results:', error);
         alert('Failed to fetch gaussian results. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
       }
     },
 
     //api6
     async handleFilterGaussians(actualMarker){
+      this.isLoading+=1;
       try{
-        const response = await fetch('http://127.0.0.1:5000/filter_gaussians_by_region', {
+        const response = await fetch('http://10.130.136.14:48661/api/filter_gaussians_by_region', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -179,17 +195,20 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        this.filterResults = data; // 更新高斯过滤结果
+        this.filterResults = data.gaussian_ids; // 更新高斯过滤结果
       }catch(error){
         console.error('Error fetching filtered gaussians:', error);
         alert('Failed to fetch filtered gaussians. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
       }
     },
 
     //api 7
     async handleTextRegionGuide() {
+      this.isLoading+=1;
       try {
-        const response = await fetch('http://127.0.0.1:5000/get_text_region_guide_results', {
+        const response = await fetch('http://10.130.136.14:48661/api/get_text_region_guide_results', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -208,19 +227,22 @@ export default {
         }
 
         const data = await response.json();
-        this.results = data; // 更新结果数据
+        this.results = data.results; // 更新结果数据
         if (data.length > 0) {
-          this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
         }
       } catch (error) {
         console.error('Error fetching region guide results:', error);
         alert('Failed to fetch region guide results. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
       }
     },
     //api 8
     async getPopulationCheckpoint(){
+      this.isLoading+=1;
       try{
-        const response = await fetch('http://127.0.0.1:5000/get_population_checkpoint', {
+        const response = await fetch('http://10.130.136.14:48661/api/get_population_checkpoint', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -234,13 +256,15 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        this.results = data; // 更新结果数据
+        this.results = data.results; // 更新结果数据
         if (data.length > 0) {
-          this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
+          await this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
         }
       }catch(error){
         console.error('Error fetching population checkpoint:', error);
         alert('Failed to fetch population checkpoint. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
       }
     },
     //api9
@@ -249,8 +273,9 @@ export default {
         alert("无可用的TFparam")
         return;
       }
+      this.isLoading+=1;
       try{
-        const response = await fetch('http://127.0.0.1:5000/export_tf_video', {
+        const response = await fetch('http://10.130.136.14:48661/api/export_tf_video', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -278,7 +303,9 @@ export default {
       }catch(error){
         console.error('Error exporting video:', error);
         alert('Failed to export video. Please check the server URL and try again.');
-      };
+      }finally{
+        this.isLoading-=1;
+      }
     },
   },
   mounted() {
@@ -300,5 +327,35 @@ export default {
   display: flex;
   gap: 20px;
   align-items: center;
+}
+
+/* 半透明全屏遮罩层 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  border: 8px solid rgba(255, 255, 255, 0.3); /* 边框颜色和透明度 */
+  border-top: 8px solid #ffffff; /* 旋转的白色边框 */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite; /* 旋转动画 */
+}
+
+/* 旋转动画关键帧 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
