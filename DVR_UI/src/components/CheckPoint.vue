@@ -57,15 +57,14 @@
     methods: {
       setActiveStep(id) {
         this.$emit('change-step', id);
-        console.log('setActiveStep')
       },
-      addCheckPoint(sort) {
+      addCheckPoint(sort,step) {
         // 清除当前步骤之后的所有检查点
-        this.checkpoints = this.checkpoints.filter(cp => cp.id <= this.currentStep);
+        this.checkpoints = this.checkpoints.filter(cp => cp.id <= step);
         // 添加新的检查点
         const newCheckpoint = this.legend[sort-1];
         this.checkpoints.push({
-          id: this.currentStep+1,
+          id: step,
           color: newCheckpoint.color,
           description: newCheckpoint.description,
         });

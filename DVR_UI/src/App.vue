@@ -43,6 +43,8 @@ export default {
       currentStep: 0, // 当前步骤
 
       isLoading:0, // 不在加载中
+      checkPointIDList:[],//后端已有存储检查点ID列表
+      save_interval:null,//后端保存checkpoint的间隔
     };
   },
   methods: {
@@ -87,6 +89,36 @@ export default {
     },
 
     // api 1
+    async handleGetCheckPoint(){
+      try{
+        this.isLoading+=1;
+        const response = await fetch('http://10.130.136.14:48661/api/get_check_point', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        this.checkPointIDList=data.iterations;
+        this.save_interval=this.checkPointIDList[0];
+        for (let i = 0; i < this.checkPointIDList.length; i++) {
+          let step=this.checkPointIDList[i]/this.save_interval;
+          this.$refs.checkPoint.addCheckPoint(1,step); // 添加检查点
+        }
+        this.currentStep+=1; // 切换step
+        await this.getPopulationCheckpoint();
+      }catch(error){
+        console.error('Error fetching checkpoint:', error);
+        alert('Failed to fetch checkpoint. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
+      }
+    },
+
+    // api 2
     async handleGetExplorationResults() {
       try {
         this.isLoading+=1;
@@ -115,7 +147,7 @@ export default {
       }
     },
 
-    //api 2
+    //api 3
     async handleGetTextStyleGuideResults(){
       this.isLoading+=1;
       try {
@@ -148,7 +180,7 @@ export default {
         }
     },
 
-    //api 5
+    //api 6
     async handleSeparateGaussians() {
       this.isLoading+=1;
       try {
@@ -177,7 +209,7 @@ export default {
       }
     },
 
-    //api6
+    //api7
     async handleFilterGaussians(actualMarker){
       this.isLoading+=1;
       try{
@@ -204,7 +236,7 @@ export default {
       }
     },
 
-    //api 7
+    //api 8
     async handleTextRegionGuide() {
       this.isLoading+=1;
       try {
@@ -238,7 +270,7 @@ export default {
         this.isLoading-=1;
       }
     },
-    //api 8
+    //api 9
     async getPopulationCheckpoint(){
       this.isLoading+=1;
       try{
@@ -248,7 +280,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            iteration: this.currentStep,
+            iteration: this.currentStep*this.save_interval,
             selected_number: 4,
           }),
         });
@@ -267,7 +299,7 @@ export default {
         this.isLoading-=1;
       }
     },
-    //api9
+    //api10
     async handleExportVideo(){
       if(this.results.length===0){
         alert("无可用的TFparam")
@@ -288,6 +320,7 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const blob=await response.blob();
+        console.log(`Blob size: ${blob.size} bytes`);
 
         const url=window.URL.createObjectURL(blob);
         const a=document.createElement('a');
@@ -309,9 +342,7 @@ export default {
     },
   },
   mounted() {
-    this.handleGetExplorationResults(); // 页面加载时发起请求
-    this.currentStep+=1; // 切换step
-    this.$refs.checkPoint.addCheckPoint(1); // 添加检查点
+    this.handleGetCheckPoint(); // 页面加载时发起请求
   },
 };
 </script>
