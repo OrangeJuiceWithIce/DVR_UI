@@ -98,11 +98,12 @@ export default {
         this.activeId = id;
         this.activeImage = selectedResult.image;
         this.marker = null; // 清除之前的标记点
-        this.actualMarker=null;
+        this.actualMarker=[];
         this.$emit('activeImageChanged', id);
       }
     },
     setActiveGaussian(id) {
+      console.log(id)
       const index = this.activeGaussians.indexOf(id);
       if (index === -1) {
         this.activeGaussians.push(id);
@@ -128,7 +129,8 @@ export default {
 
       // 更新标记点的位置
       this.marker = { x , y };
-      this.actualMarker={x:x*scaleX,y:y*scaleY};
+      console.log(x,y,scaleX,scaleY);
+      this.actualMarker={'x':x*scaleX,'y':y*scaleY};
       this.$emit('filterGaussian', this.actualMarker);
     }
   },

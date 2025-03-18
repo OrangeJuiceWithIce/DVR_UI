@@ -85,7 +85,7 @@ export default {
         }
       }
       this.currentStep+=1; // 切换step
-      this.$refs.checkPoint.addCheckPoint(sort); // 添加检查点
+      this.$refs.checkPoint.addCheckPoint(sort,this.currentStep); // 添加检查点
     },
 
     // api 1
@@ -108,8 +108,15 @@ export default {
           let step=this.checkPointIDList[i]/this.save_interval;
           this.$refs.checkPoint.addCheckPoint(1,step); // 添加检查点
         }
-        this.currentStep+=1; // 切换step
-        await this.getPopulationCheckpoint();
+        if(this.checkPointIDList.length>0){
+          this.currentStep+=1; // 切换step
+          await this.getPopulationCheckpoint();
+        }
+        else{
+          await this.handleGetExplorationResults();
+          this.currentStep+=1; // 切换step
+          this.$refs.checkPoint.addCheckPoint(1,this.currentStep);
+        }
       }catch(error){
         console.error('Error fetching checkpoint:', error);
         alert('Failed to fetch checkpoint. Please check the server URL and try again.');
@@ -289,7 +296,7 @@ export default {
         }
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        if (data.length > 0) {
+        if (this.results.length > 0) {
           await this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
         }
       }catch(error){

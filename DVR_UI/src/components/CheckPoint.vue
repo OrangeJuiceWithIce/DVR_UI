@@ -60,7 +60,7 @@
       },
       addCheckPoint(sort,step) {
         // 清除当前步骤之后的所有检查点
-        this.checkpoints = this.checkpoints.filter(cp => cp.id <= step);
+        this.checkpoints = this.checkpoints.filter(cp => cp.id < step);
         // 添加新的检查点
         const newCheckpoint = this.legend[sort-1];
         this.checkpoints.push({
