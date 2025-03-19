@@ -10,10 +10,11 @@
       <TextInput @submitText="handleSubmitText"/>
     </div>
     <!-- 结果展示组件 -->
-    <ExplorationResults :results="results" :separateResults="separateResults" :filterResults="filterResults" 
+    <ExplorationResults :results="results" :separateResults="separateResults" :filterResults="filterResults"  :ifHoverMainImage="ifHoverMainImage"
     @activeImageChanged="activeImageChanged" 
     @activeGaussianChanged="activeGaussianChanged"
     @filterGaussian="handleFilterGaussians"
+    @wheel="handleZoom"
     />
     <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
   </div>
@@ -42,6 +43,7 @@ export default {
       filterResults:[],  // api6过滤后的高斯结果
       currentStep: 0, // 当前步骤
 
+      ifHoverMainImage: false, // 鼠标是否在主图上
       isLoading:0, // 不在加载中
       checkPointIDList:[],//后端已有存储检查点ID列表
       save_interval:null,//后端保存checkpoint的间隔
@@ -92,7 +94,7 @@ export default {
     async handleGetCheckPoint(){
       try{
         this.isLoading+=1;
-        const response = await fetch('http://10.130.136.14:48661/api/get_check_point', {
+        const response = await fetch('http://10.130.136.14:23382/api/get_check_point', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -129,7 +131,7 @@ export default {
     async handleGetExplorationResults() {
       try {
         this.isLoading+=1;
-        const response = await fetch('http://10.130.136.14:48661/api/get_exploration_results', {
+        const response = await fetch('http://10.130.136.14:23382/api/get_exploration_results', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -145,7 +147,7 @@ export default {
 
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        await this.handleSeparateGaussians(0); // 默认分割第一个TF的高斯
+        await this.handleSeparateGaussians(); // 默认分割第一个TF的高斯
       } catch (error) {
         console.error('Error fetching initial exploration results:', error);
         alert('Failed to load initial results. Please check the server URL and try again.');
@@ -158,7 +160,7 @@ export default {
     async handleGetTextStyleGuideResults(){
       this.isLoading+=1;
       try {
-          const response = await fetch('http://10.130.136.14:48661/api/get_text_style_guide_results', {
+          const response = await fetch('http://10.130.136.14:23382/api/get_text_style_guide_results', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -176,9 +178,7 @@ export default {
   
           const data = await response.json();
           this.results = data.results; // 更新结果数据
-          if (data.length > 0) {
-            await this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
-          }
+          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
         } catch (error) {
           console.error('Error submitting text:', error);
           alert('Failed to submit text. Please check the server URL and try again.');
@@ -187,11 +187,79 @@ export default {
         }
     },
 
+    //api 4
+    async handleRotate(x,y){
+      this.isLoading+=1;
+      try{
+        const response = await fetch('http://10.130.136.14:23382/api/rotate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            direction:{
+              deltaX:x,
+              deltaY:y,
+            },
+            selected_number:4,
+            num_views:1,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        this.results = data.results; // 更新结果数据
+        await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+      }catch(error){
+        console.error('Error rotating:', error);
+        alert('Failed to rotate. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
+      }
+    },
+    //api 5
+    async handleZoom(direction){
+      let delta=0;
+      if(direction>0){
+        delta=0.1;
+      }
+      else{
+        delta=-0.1;
+      }
+      this.isLoading+=1;
+      try{
+        const response = await fetch('http://10.130.136.14:23382/api/zoom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            direction:delta,
+            selected_number:4,
+            num_views:1,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        this.results = data.results; // 更新结果数据
+        await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+      }catch(error){
+        console.error('Error zooming:', error);
+        alert('Failed to zoom. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
+      }
+    },
     //api 6
     async handleSeparateGaussians() {
       this.isLoading+=1;
       try {
-        const response = await fetch('http://10.130.136.14:48661/api/get_seperate_gaussians', {
+        const response = await fetch('http://10.130.136.14:23382/api/get_seperate_gaussians', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -200,7 +268,6 @@ export default {
             tfparams: this.results[this.activeId], // 发送 activeId 到后端
           }),
         });
-        console.log(this.results[this.activeId]);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -220,7 +287,7 @@ export default {
     async handleFilterGaussians(actualMarker){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:48661/api/filter_gaussians_by_region', {
+        const response = await fetch('http://10.130.136.14:23382/api/filter_gaussians_by_region', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -247,7 +314,7 @@ export default {
     async handleTextRegionGuide() {
       this.isLoading+=1;
       try {
-        const response = await fetch('http://10.130.136.14:48661/api/get_text_region_guide_results', {
+        const response = await fetch('http://10.130.136.14:23382/api/get_text_region_guide_results', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -281,7 +348,7 @@ export default {
     async getPopulationCheckpoint(){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:48661/api/get_population_checkpoint', {
+        const response = await fetch('http://10.130.136.14:23382/api/get_population_checkpoint', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -297,7 +364,7 @@ export default {
         const data = await response.json();
         this.results = data.results; // 更新结果数据
         if (this.results.length > 0) {
-          await this.handleSeparateGaussians(0); // 假设分割第一个TF的高斯
+          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
         }
       }catch(error){
         console.error('Error fetching population checkpoint:', error);
@@ -314,7 +381,7 @@ export default {
       }
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:48661/api/export_tf_video', {
+        const response = await fetch('http://10.130.136.14:23382/api/export_tf_video', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -347,9 +414,37 @@ export default {
         this.isLoading-=1;
       }
     },
+
+    // 键盘事件
+    async handleKeyDown(event) {
+      let deltaX = 0;
+      let deltaY = 0;
+      switch (event.key) {
+        case 'ArrowLeft':
+          deltaX=-0.1*Math.PI;
+          break;
+        case 'ArrowRight':
+          deltaX=0.1*Math.PI;
+          break;
+        case 'ArrowUp':
+          deltaY=-0.1*Math.PI;
+          break;
+        case 'ArrowDown':
+          deltaY=0.1*Math.PI;
+          break;
+        default:
+          return;
+      }
+      await this.handleRotate(deltaX,deltaY);
+    }
   },
   mounted() {
     this.handleGetCheckPoint(); // 页面加载时发起请求
+
+    window.addEventListener('keydown',this.handleKeyDown);
+  },
+  beforeDestroy() {
+    window.removeEventListener('keydown',this.handleKeyDown);
   },
 };
 </script>

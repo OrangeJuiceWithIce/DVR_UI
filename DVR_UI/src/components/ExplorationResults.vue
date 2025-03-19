@@ -14,7 +14,7 @@
     </div>
 
     <!-- 主图展示 -->
-    <div class="main-image" @click="addMarker($event)">
+    <div class="main-image" @click="addMarker($event)" @mouseenter="ifHoverMainImage=true" @mouseleave="ifHoverMainImage=false" @wheel.prevent="handleWheel($event)">
       <img :src="'data:image/*;base64,'+activeImage" alt="Main Image" class="main-image-content">
       <!-- 动态显示标记点 -->
       <div
@@ -64,6 +64,7 @@ export default {
       activeGaussians: [], // 当前激活的高斯
       marker: null, // 标记点
       actualMarker:null,  //实际相对于图片的位置
+      ifHoverMainImage:false, //鼠标是否在主图上
     };
   },
   watch: {
@@ -132,6 +133,10 @@ export default {
       console.log(x,y,scaleX,scaleY);
       this.actualMarker={'x':x*scaleX,'y':y*scaleY};
       this.$emit('filterGaussian', this.actualMarker);
+    },
+    handleWheel(event) {
+      const direction = event.deltaY;
+      this.$emit('wheel',direction);
     }
   },
   mounted() {
