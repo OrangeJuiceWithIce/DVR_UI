@@ -10,7 +10,7 @@
       <TextInput @submitText="handleSubmitText"/>
     </div>
     <!-- 结果展示组件 -->
-    <ExplorationResults :results="results" :separateResults="separateResults" :filterResults="filterResults"  :ifHoverMainImage="ifHoverMainImage"
+    <ExplorationResults :results="results" :separateResults="separateResults" :ifHoverMainImage="ifHoverMainImage"
     @activeImageChanged="activeImageChanged" 
     @activeGaussianChanged="activeGaussianChanged"
     @filterGaussian="handleFilterGaussians"
@@ -39,8 +39,6 @@ export default {
       separateResults: [], //分割特征
       userInput: '', // 用户输入的文本
       activeId: 0, // 当前激活的TF的ID
-      activeGaussianId: [], // 当前激活的高斯的ID
-      filterResults:[],  // api6过滤后的高斯结果
       currentStep: 0, // 当前步骤
 
       ifHoverMainImage: false, // 鼠标是否在主图上
@@ -54,8 +52,17 @@ export default {
       this.activeId=id;
       this.handleSeparateGaussians(); // 切换图片时分割高斯
     },
-    activeGaussianChanged(activeGaussians){
-      this.activeGaussianId=activeGaussians;
+    activeGaussianChanged(results){
+      this.results=results;
+      console.log(this.results);
+    },
+    ifAllActivated(){
+      for(let gaussian of this.results.find(result => result.id === this.activeId).gaussians){
+        if(gaussian.activate===false){
+          return false;
+        }
+      }
+      return true;
     },
     currentStepChange(step) {
       this.currentStep=step;
@@ -65,9 +72,9 @@ export default {
     async handleSubmitText(text) {
       this.userInput = text;
       let sort=0;
-      console.log(this.activeGaussianId);
+      let ifAllActivated=this.ifAllActivated();
       if(this.userInput===''){
-        if(this.activeGaussianId.length!=this.separateResults.length){
+        if(!ifAllActivated){
           alert('请输入文本');
           return;
         }
@@ -77,7 +84,7 @@ export default {
         }
       }
       else{
-        if(this.activeGaussianId.length===this.separateResults.length){
+        if(ifAllActivated){
           this.handleGetTextStyleGuideResults();//text guide
           sort=2;
         }
@@ -89,7 +96,15 @@ export default {
       this.currentStep+=1; // 切换step
       this.$refs.checkPoint.addCheckPoint(sort,this.currentStep); // 添加检查点
     },
-
+    //获取checkpoint的种类
+    getMode(mode){
+      if(mode==="quality")
+        return 1;
+      else if(mode==="text")
+        return 2;
+      else
+        return 3;
+    },
     // api 1
     async handleGetCheckPoint(){
       try{
@@ -104,15 +119,18 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        this.checkPointIDList=data.iterations;
+        this.checkPointIDList=data.results;
+        console.log(this.checkPointIDList);
         if(this.checkPointIDList.length>1){
-          this.save_interval=this.checkPointIDList[1]-this.checkPointIDList[0];
+          this.save_interval=this.checkPointIDList[1].iteration-this.checkPointIDList[0].iteration;
           for (let i = 0; i < this.checkPointIDList.length; i++) {
-            let step=this.checkPointIDList[i]/this.save_interval;
-            this.$refs.checkPoint.addCheckPoint(1,step); // 添加检查点
+            let step=this.checkPointIDList[i].iteration/this.save_interval;
+            let sort=this.getMode(this.checkPointIDList[i].mode)
+            this.$refs.checkPoint.addCheckPoint(sort,step); // 添加检查点
           }
         }
         else if(this.checkPointIDList.length===1){
+          let sort=this.getMode(this.checkPointIDList[0].mode)
           this.$refs.checkPoint.addCheckPoint(1,0); // 添加检查点
         }
 
@@ -263,8 +281,6 @@ export default {
     async handleSeparateGaussians() {
       this.isLoading+=1;
       try {
-        console.log(this.activeId);
-        console.log(this.results);
         const response = await fetch('http://10.130.136.14:23382/api/get_seperate_gaussians', {
           method: 'POST',
           headers: {
@@ -307,7 +323,17 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        this.filterResults = data.gaussian_ids; // 更新高斯过滤结果
+        let filterResults = data.gaussian_ids; // 更新高斯过滤结果
+        this.results.find(result=>result.id===this.activeId).gaussians.forEach(gaussian=>{
+          if(filterResults.includes(gaussian.id)){
+            gaussian.activate=true;
+            console.log(gaussian.id);
+          }
+          else{
+            gaussian.activate=false;
+            console.log(gaussian.id);
+          }
+        });
       }catch(error){
         console.error('Error fetching filtered gaussians:', error);
         alert('Failed to fetch filtered gaussians. Please check the server URL and try again.');
@@ -328,7 +354,6 @@ export default {
           body: JSON.stringify({
             text: this.userInput,
             tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
-            selected_gaussian_ids: this.activeGaussianId, // 发送当前激活的高斯ID
             selected_number: 4,
             one_epoch: 5,
           }),
@@ -396,7 +421,6 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const blob=await response.blob();
-        console.log(`Blob size: ${blob.size} bytes`);
 
         const url=window.URL.createObjectURL(blob);
         const a=document.createElement('a');

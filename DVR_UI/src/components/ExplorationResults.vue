@@ -10,6 +10,7 @@
         @click="setActiveImage(result.id)"
       >
         <img :src="'data:image/*;base64,'+result.image" alt="Thumbnail" class="thumbnail">
+        <div v-if="result.id === activeId" class="active-marker"></div>
       </div>
     </div>
 
@@ -31,10 +32,11 @@
           v-for="gaussian in separateResults"
           :key="gaussian.id"
           class="gaussian-item"
-          :class="{ active: activeGaussians.includes(gaussian.id) }"
+          :class="{ active:isActivated(gaussian.id)}"
           @click="setActiveGaussian(gaussian.id)"
         >
           <img :src="'data:image/*;base64,'+gaussian.image" alt="Gaussian Image" class="gaussian-image">
+          <div v-if="isActivated(gaussian.id)" class="active-marker"></div>
         </div>
       </div>
     </div>
@@ -52,16 +54,11 @@ export default {
       type: Array,
       required: true,
     },
-    filterResults:{
-      type:Array,
-      required:true,
-    },
   },
   data() {
     return {
       activeId: null, // 当前激活的图片 ID
       activeImage: '', // 当前展示的主图
-      activeGaussians: [], // 当前激活的高斯
       marker: null, // 标记点
       actualMarker:null,  //实际相对于图片的位置
       ifHoverMainImage:false, //鼠标是否在主图上
@@ -77,24 +74,16 @@ export default {
         this.$emit('activeImageChanged', this.activeId);
       }
     },
-    // 监听 separateResults 的变化
-    separateResults(newSeparateResults) {
-      this.activeGaussians = [];
-      this.$emit('activeGaussianChanged', this.activeGaussians);
-    },
-    filterResults(newFilterResults){
-      if (newFilterResults && newFilterResults.length > 0) {
-        // 将新 ID 合并到 activeGaussians 中
-        newFilterResults.forEach((id) => {
-          if (!this.activeGaussians.includes(id)) {
-            this.activeGaussians.push(id);
-          }
-        });
-      }
-      this.$emit('activeGaussianChanged', this.activeGaussians);
-    }
   },
   methods: {
+    isActivated(gaussianId){
+      for(let gaussian of this.results.find(result => result.id === this.activeId).gaussians){
+        if (gaussian.id === gaussianId && gaussian.activate){
+          return true;
+        }
+      }
+      return false;
+    },
     setActiveImage(id) {
       const selectedResult = this.results.find(result => result.id === id);
       if (selectedResult) {
@@ -107,13 +96,12 @@ export default {
     },
     setActiveGaussian(id) {
       console.log(id)
-      const index = this.activeGaussians.indexOf(id);
-      if (index === -1) {
-        this.activeGaussians.push(id);
-      } else {
-        this.activeGaussians.splice(index, 1);
-      }
-      this.$emit('activeGaussianChanged', this.activeGaussians);
+      this.results.find(result => result.id === this.activeId).gaussians.forEach(gaussian => {
+        if (gaussian.id === id) {
+          gaussian.activate = !gaussian.activate;
+          this.$emit('activeGaussianChanged', this.results);
+        } 
+      });
     },
     addMarker(event) {
       // 获取图片容器的 DOM 元素
@@ -132,7 +120,6 @@ export default {
 
       // 更新标记点的位置
       this.marker = { x , y };
-      console.log(x,y,scaleX,scaleY);
       this.actualMarker={'x':x*scaleX,'y':y*scaleY};
       this.$emit('filterGaussian', this.actualMarker);
     },
@@ -142,7 +129,6 @@ export default {
       }
       this.wheelTimeout = setTimeout(() => {
         let direction = event.deltaY;
-        console.log(direction);
         this.$emit('handleWheel',direction);
         this.wheelTimeout = null;
       },1000);
@@ -154,11 +140,6 @@ export default {
       this.activeId = this.results[0].id;
       this.activeImage = this.results[0].image;
       this.$emit('activeImageChanged', this.activeId);
-    }
-    // 默认选中第一个高斯
-    if (this.separateResults.length > 0) {
-      this.activeGaussians = [this.separateResults[0].id];
-      this.$emit('activeGaussianChanged', this.activeGaussians);
     }
   },
 };
@@ -188,6 +169,7 @@ export default {
 }
 
 .thumbnail-item {
+  position: relative; /* 确保标注的绝对定位是相对于这个容器 */
   width: 120px; /* 固定宽度 */
   height: 120px; /* 固定高度 */
   cursor: pointer;
@@ -247,6 +229,7 @@ export default {
 }
 
 .gaussian-item {
+  position: relative; /* 确保标注的绝对定位是相对于这个容器 */
   width: 120px; /* 固定宽度 */
   height: 120px; /* 固定高度 */
   cursor: pointer;
@@ -277,5 +260,15 @@ export default {
   background-color: red;
   border-radius: 50%;
   transform: translate(-50%, -50%); /* 使标记点居中于点击位置 */
+}
+
+.active-marker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%; /* 使标注为圆形 */
 }
 </style>
