@@ -300,7 +300,7 @@ export default {
           },
           body: JSON.stringify({
             region:actualMarker,
-            tfparams: this.results[this.activeId], // 发送当前激活的TFparams
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
           }),
         });
         if (!response.ok) {
@@ -327,7 +327,7 @@ export default {
           },
           body: JSON.stringify({
             text: this.userInput,
-            tfparams: this.results[this.activeId], // 发送当前激活的TFparams
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
             selected_gaussian_ids: this.activeGaussianId, // 发送当前激活的高斯ID
             selected_number: 4,
             one_epoch: 5,
@@ -389,7 +389,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tfparams: this.results[this.activeId], // 发送当前激活的TFparams
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
           }),
         });
         if (!response.ok) {
