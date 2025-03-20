@@ -14,7 +14,7 @@
     @activeImageChanged="activeImageChanged" 
     @activeGaussianChanged="activeGaussianChanged"
     @filterGaussian="handleFilterGaussians"
-    @wheel="handleZoom"
+    @handleWheel="handleZoom"
     />
     <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
   </div>
@@ -105,18 +105,22 @@ export default {
         }
         const data = await response.json();
         this.checkPointIDList=data.iterations;
-        this.save_interval=this.checkPointIDList[0];
-        for (let i = 0; i < this.checkPointIDList.length; i++) {
-          let step=this.checkPointIDList[i]/this.save_interval;
-          this.$refs.checkPoint.addCheckPoint(1,step); // 添加检查点
+        if(this.checkPointIDList.length>1){
+          this.save_interval=this.checkPointIDList[1]-this.checkPointIDList[0];
+          for (let i = 0; i < this.checkPointIDList.length; i++) {
+            let step=this.checkPointIDList[i]/this.save_interval;
+            this.$refs.checkPoint.addCheckPoint(1,step); // 添加检查点
+          }
         }
+        else if(this.checkPointIDList.length===1){
+          this.$refs.checkPoint.addCheckPoint(1,0); // 添加检查点
+        }
+
         if(this.checkPointIDList.length>0){
-          this.currentStep+=1; // 切换step
           await this.getPopulationCheckpoint();
         }
         else{
           await this.handleGetExplorationResults();
-          this.currentStep+=1; // 切换step
           this.$refs.checkPoint.addCheckPoint(1,this.currentStep);
         }
       }catch(error){
@@ -178,7 +182,7 @@ export default {
   
           const data = await response.json();
           this.results = data.results; // 更新结果数据
-          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+          this.separateResults=[];
         } catch (error) {
           console.error('Error submitting text:', error);
           alert('Failed to submit text. Please check the server URL and try again.');
@@ -211,7 +215,7 @@ export default {
         }
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+        await this.handleSeparateGaussians();
       }catch(error){
         console.error('Error rotating:', error);
         alert('Failed to rotate. Please check the server URL and try again.');
@@ -223,10 +227,10 @@ export default {
     async handleZoom(direction){
       let delta=0;
       if(direction>0){
-        delta=0.1;
+        delta=-0.1;
       }
       else{
-        delta=-0.1;
+        delta=0.1;
       }
       this.isLoading+=1;
       try{
@@ -247,7 +251,7 @@ export default {
         }
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
+        await this.handleSeparateGaussians();
       }catch(error){
         console.error('Error zooming:', error);
         alert('Failed to zoom. Please check the server URL and try again.');
@@ -259,13 +263,15 @@ export default {
     async handleSeparateGaussians() {
       this.isLoading+=1;
       try {
+        console.log(this.activeId);
+        console.log(this.results);
         const response = await fetch('http://10.130.136.14:23382/api/get_seperate_gaussians', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tfparams: this.results[this.activeId], // 发送 activeId 到后端
+            tfparams: this.results.find(result => result.id === this.activeId), // 发送 activeId 到后端
           }),
         });
 
@@ -334,9 +340,7 @@ export default {
 
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        if (data.length > 0) {
-          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
-        }
+        this.separateResults=[];
       } catch (error) {
         console.error('Error fetching region guide results:', error);
         alert('Failed to fetch region guide results. Please check the server URL and try again.');
@@ -363,9 +367,7 @@ export default {
         }
         const data = await response.json();
         this.results = data.results; // 更新结果数据
-        if (this.results.length > 0) {
-          await this.handleSeparateGaussians(); // 假设分割第一个TF的高斯
-        }
+        this.separateResults=[];
       }catch(error){
         console.error('Error fetching population checkpoint:', error);
         alert('Failed to fetch population checkpoint. Please check the server URL and try again.');

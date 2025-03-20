@@ -14,7 +14,7 @@
     </div>
 
     <!-- 主图展示 -->
-    <div class="main-image" @click="addMarker($event)" @mouseenter="ifHoverMainImage=true" @mouseleave="ifHoverMainImage=false" @wheel.prevent="handleWheel($event)">
+    <div class="main-image" @click="addMarker($event)" @mouseenter="ifHoverMainImage=true" @mouseleave="ifHoverMainImage=false" @wheel="handleWheel($event)">
       <img :src="'data:image/*;base64,'+activeImage" alt="Main Image" class="main-image-content">
       <!-- 动态显示标记点 -->
       <div
@@ -65,6 +65,7 @@ export default {
       marker: null, // 标记点
       actualMarker:null,  //实际相对于图片的位置
       ifHoverMainImage:false, //鼠标是否在主图上
+      wheelTimeout:null, //防止滚动过快
     };
   },
   watch: {
@@ -73,6 +74,7 @@ export default {
       if (newResults.length > 0) {
         this.activeId = newResults[0].id;
         this.activeImage = newResults[0].image;
+        this.$emit('activeImageChanged', this.activeId);
       }
     },
     // 监听 separateResults 的变化
@@ -135,9 +137,16 @@ export default {
       this.$emit('filterGaussian', this.actualMarker);
     },
     handleWheel(event) {
-      const direction = event.deltaY;
-      this.$emit('wheel',direction);
-    }
+      if (this.wheelTimeout){
+        return;
+      }
+      this.wheelTimeout = setTimeout(() => {
+        let direction = event.deltaY;
+        console.log(direction);
+        this.$emit('handleWheel',direction);
+        this.wheelTimeout = null;
+      },1000);
+    },
   },
   mounted() {
     // 默认显示第一张图片
