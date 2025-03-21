@@ -265,10 +265,32 @@ export default {
   transform: translate(-50%, -50%); /* 使标记点居中于点击位置 */
 }
 
-.checkbox{
+.checkbox {
   position: absolute;
   top: 5px; /* 距离顶部的距离 */
   right: 5px; /* 距离右侧的距离 */
   z-index: 100;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  appearance: none; /* 移除默认样式 */
+  background-color: white; /* 默认背景颜色 */
+  cursor: pointer;
+}
+
+.checkbox:checked {
+  background-color: #0073e6; /* 激活状态的背景颜色 */
+}
+
+.checkbox:checked::after {
+  content: '\2713'; /* 使用 Unicode 字符表示打勾 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
 }
 </style>
