@@ -10,7 +10,6 @@
         @click="setActiveImage(result.id)"
       >
         <img :src="'data:image/*;base64,'+result.image" alt="Thumbnail" class="thumbnail">
-        <div v-if="result.id === activeId" class="active-marker"></div>
       </div>
     </div>
 
@@ -36,7 +35,11 @@
           @click="setActiveGaussian(gaussian.id)"
         >
           <img :src="'data:image/*;base64,'+gaussian.image" alt="Gaussian Image" class="gaussian-image">
-          <div v-if="isActivated(gaussian.id)" class="active-marker"></div>
+          <input
+          type="checkbox"
+          class="checkbox"
+          :checked="isActivated(gaussian.id)"
+          >
         </div>
       </div>
     </div>
@@ -262,13 +265,10 @@ export default {
   transform: translate(-50%, -50%); /* 使标记点居中于点击位置 */
 }
 
-.active-marker {
+.checkbox{
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
-  background-color: red;
-  border-radius: 50%; /* 使标注为圆形 */
+  top: 5px; /* 距离顶部的距离 */
+  right: 5px; /* 距离右侧的距离 */
+  z-index: 100;
 }
 </style>
