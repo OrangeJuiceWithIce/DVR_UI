@@ -10,7 +10,7 @@
       <TextInput @submitText="handleSubmitText"/>
     </div>
     <!-- 结果展示组件 -->
-    <ExplorationResults :results="results" :separateResults="separateResults" :ifHoverMainImage="ifHoverMainImage"
+    <ExplorationResults :results="results" :separateResults="separateResults"
     @activeImageChanged="activeImageChanged" 
     @activeGaussianChanged="activeGaussianChanged"
     @filterGaussian="handleFilterGaussians"
@@ -41,10 +41,11 @@ export default {
       activeId: 0, // 当前激活的TF的ID
       currentStep: 0, // 当前步骤
 
-      ifHoverMainImage: false, // 鼠标是否在主图上
       isLoading:0, // 不在加载中
       checkPointIDList:[],//后端已有存储检查点ID列表
       save_interval:null,//后端保存checkpoint的间隔
+
+      ifPartialIMage:false,//是否是局部图片
     };
   },
   methods: {
@@ -54,7 +55,7 @@ export default {
     },
     activeGaussianChanged(results){
       this.results=results;
-      console.log(this.results);
+      this.handleGetPartialImage();
     },
     ifAllActivated(){
       for(let gaussian of this.results.find(result => result.id === this.activeId).gaussians){
@@ -436,6 +437,32 @@ export default {
       }catch(error){
         console.error('Error exporting video:', error);
         alert('Failed to export video. Please check the server URL and try again.');
+      }finally{
+        this.isLoading-=1;
+      }
+    },
+    //api 11
+    async handleGetPartialImage(){
+      this.isLoading+=1;
+      try{
+        const response = await fetch('http://10.130.136.14:23382/api/get_partial_image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data=await response.json();
+        this.ifPartialIMage=true;
+        this.results.find(result=>result.id===this.activeId).image=data.image; // 更新局部图片
+      }catch(error){
+        console.error('Error fetching partial image:', error);
+        alert('Failed to fetch partial image. Please check the server URL and try again.');
       }finally{
         this.isLoading-=1;
       }

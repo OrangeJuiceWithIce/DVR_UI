@@ -15,7 +15,7 @@
 
     <!-- 主图展示 -->
     <div class="main-image" @click="addMarker($event)" @mouseenter="ifHoverMainImage=true" @mouseleave="ifHoverMainImage=false" @wheel="handleWheel($event)">
-      <img :src="'data:image/*;base64,'+activeImage" alt="Main Image" class="main-image-content">
+      <img :src="imgSrc" alt="Main Image" class="main-image-content">
       <!-- 动态显示标记点 -->
       <div
         v-if="marker"
@@ -61,7 +61,6 @@ export default {
   data() {
     return {
       activeId: null, // 当前激活的图片 ID
-      activeImage: '', // 当前展示的主图
       marker: null, // 标记点
       actualMarker:null,  //实际相对于图片的位置
       ifHoverMainImage:false, //鼠标是否在主图上
@@ -73,10 +72,17 @@ export default {
     results(newResults) {
       if (newResults.length > 0) {
         this.activeId = newResults[0].id;
-        this.activeImage = newResults[0].image;
         this.$emit('activeImageChanged', this.activeId);
       }
     },
+  },
+  computed: {
+    imgSrc() {
+      if (this.results.length === 0 || this.activeId === null) {
+        return ''; // 返回空字符串或默认图片
+      }
+      return 'data:image/*;base64,' + this.results.find(result => result.id === this.activeId).image;
+    }
   },
   methods: {
     isActivated(gaussianId){
@@ -91,7 +97,6 @@ export default {
       const selectedResult = this.results.find(result => result.id === id);
       if (selectedResult) {
         this.activeId = id;
-        this.activeImage = selectedResult.image;
         this.marker = null; // 清除之前的标记点
         this.actualMarker=[];
         this.$emit('activeImageChanged', id);
@@ -127,6 +132,9 @@ export default {
       this.$emit('filterGaussian', this.actualMarker);
     },
     handleWheel(event) {
+      if (!this.ifHoverMainImage){
+        return;
+      }
       if (this.wheelTimeout){
         return;
       }
@@ -141,7 +149,6 @@ export default {
     // 默认显示第一张图片
     if (this.results.length > 0) {
       this.activeId = this.results[0].id;
-      this.activeImage = this.results[0].image;
       this.$emit('activeImageChanged', this.activeId);
     }
   },
