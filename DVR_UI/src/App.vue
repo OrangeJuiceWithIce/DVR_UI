@@ -26,6 +26,8 @@ import ExplorationResults from './components/ExplorationResults.vue';
 import CheckPoint from './components/CheckPoint.vue';
 import ExportVedio from './components/ExportVedio.vue';
 
+const baseURL = `http://10.130.136.14:${import.meta.env.VITE_BACKEND_PORT}`;
+
 export default {
   components: {
     TextInput,
@@ -110,7 +112,7 @@ export default {
     async handleGetCheckPoint(){
       try{
         this.isLoading+=1;
-        const response = await fetch('http://10.130.136.14:23382/api/get_check_point', {
+        const response = await fetch(`${baseURL}/api/get_check_point`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -154,7 +156,7 @@ export default {
     async handleGetExplorationResults() {
       try {
         this.isLoading+=1;
-        const response = await fetch('http://10.130.136.14:23382/api/get_exploration_results', {
+        const response = await fetch(`${baseURL}/api/get_exploration_results`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -183,7 +185,7 @@ export default {
     async handleGetTextStyleGuideResults(){
       this.isLoading+=1;
       try {
-          const response = await fetch('http://10.130.136.14:23382/api/get_text_style_guide_results', {
+          const response = await fetch(`${baseURL}/api/get_text_style_guide_results`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -214,7 +216,7 @@ export default {
     async handleRotate(x,y){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/rotate', {
+        const response = await fetch(`${baseURL}/api/rotate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -226,6 +228,7 @@ export default {
             },
             selected_number:4,
             num_views:1,
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
           }),
         });
 
@@ -253,7 +256,7 @@ export default {
       }
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/zoom', {
+        const response = await fetch(`${baseURL}/api/zoom`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -262,6 +265,7 @@ export default {
             direction:delta,
             selected_number:4,
             num_views:1,
+            tfparams: this.results.find(result=>result.id===this.activeId), // 发送当前激活的TFparams
           }),
         });
 
@@ -282,7 +286,7 @@ export default {
     async handleSeparateGaussians() {
       this.isLoading+=1;
       try {
-        const response = await fetch('http://10.130.136.14:23382/api/get_seperate_gaussians', {
+        const response = await fetch(`${baseURL}/api/get_seperate_gaussians`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -310,7 +314,7 @@ export default {
     async handleFilterGaussians(actualMarker){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/filter_gaussians_by_region', {
+        const response = await fetch(`${baseURL}/api/filter_gaussians_by_region`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -347,7 +351,7 @@ export default {
     async handleTextRegionGuide() {
       this.isLoading+=1;
       try {
-        const response = await fetch('http://10.130.136.14:23382/api/get_text_region_guide_results', {
+        const response = await fetch(`${baseURL}/api/get_text_region_guide_results`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -378,7 +382,7 @@ export default {
     async getPopulationCheckpoint(){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/get_population_checkpoint', {
+        const response = await fetch(`${baseURL}/api/get_population_checkpoint`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -409,7 +413,7 @@ export default {
       }
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/export_tf_video', {
+        const response = await fetch(`${baseURL}/api/export_tf_video`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -445,7 +449,7 @@ export default {
     async handleGetPartialImage(){
       this.isLoading+=1;
       try{
-        const response = await fetch('http://10.130.136.14:23382/api/get_partial_image', {
+        const response = await fetch(`${baseURL}/api/get_partial_image`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -524,8 +528,10 @@ export default {
   height: 100%;
   background: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
   display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex;
+  justify-content: flex-end; /* 水平方向靠右 */
+  align-items: flex-start; /* 垂直方向靠上 */
+  padding: 20px; /* 添加内边距，使加载符号不紧贴边缘 */
   z-index: 1000;
 }
 
