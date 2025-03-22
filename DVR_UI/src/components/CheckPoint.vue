@@ -17,19 +17,21 @@
   
       <!-- 圆形按钮区域 -->
       <div class="button-group">
-        <div
-          v-for="(checkpoint, index) in checkpoints"
-          :key="checkpoint.id"
-          class="button-item"
-          :class="{ active: checkpoint.id === currentStep }"
-          @click="setActiveStep(checkpoint.id)"
-        >
+        <div class="button-items">
           <div
-            class="circle-button"
-            :style="{ backgroundColor: checkpoint.color }"
-          ></div>
-          <!-- 在按钮之间添加线条 -->
-          <div v-if="index < checkpoints.length - 1" class="line"></div>
+            v-for="(checkpoint, index) in checkpoints"
+            :key="checkpoint.id"
+            class="button-item"
+            :class="{ active: checkpoint.id === currentStep }"
+            @click="setActiveStep(checkpoint.id)"
+          >
+            <div
+              class="circle-button"
+              :style="{ backgroundColor: checkpoint.color }"
+            ></div>
+            <!-- 在按钮之间添加线条 -->
+            <div v-if="index < checkpoints.length - 1" class="line"></div>
+          </div>
         </div>
         <span class="active-step">Current Step: {{ currentStep }}</span>
       </div>
@@ -89,6 +91,18 @@
     align-items: center;
   }
   
+  .button-items {
+    display: flex;
+    flex-direction: row;
+    width: 240px;
+    border: 2px solid #111;
+    border-radius: 5px;
+    padding:5px;
+    height:45px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
   .button-item {
     display: flex;
     flex-direction: row;
