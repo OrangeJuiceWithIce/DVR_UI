@@ -22,7 +22,9 @@
             v-for="(checkpoint, index) in checkpoints"
             :key="checkpoint.id"
             class="button-item"
-            :class="{ active: checkpoint.id === currentStep }"
+            :class="{ active: checkpoint.id === currentStep,
+              large:ShouldBeLarge(index)
+            }"
             @click="setActiveStep(checkpoint.id)"
           >
             <div
@@ -71,6 +73,28 @@
           description: newCheckpoint.description,
         });
       },
+      ShouldBeLarge(index) {
+        if(index===this.checkpoints.length-1){
+          return true;
+        }
+        const currentCheckpoint = this.checkpoints[index];
+        const nextCheckpoint = this.checkpoints[index + 1];
+        if(currentCheckpoint.description!=nextCheckpoint.description){
+          return true;
+        }
+        let count = 1;
+        for(let i=index-1;i>=0;i--){
+          if(this.checkpoints[i].description===currentCheckpoint.description){
+            count++;
+            if (this.ShouldBeLarge(i)){
+              return false;
+            }
+          }else{
+            break;
+          }
+        }
+        return count===5;
+      }
     },
   };
   </script>
@@ -81,9 +105,9 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 5px;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0;
   }
   
   .button-group {
@@ -94,8 +118,8 @@
   .button-items {
     display: flex;
     flex-direction: row;
-    width: 240px;
-    border: 2px solid #111;
+    width: 235px;
+    border: 1px solid #ccc;
     border-radius: 5px;
     padding:5px;
     height:45px;
@@ -110,34 +134,46 @@
   }
   
   .circle-button {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     margin: 0;
+    z-index: 1;
   }
   
   .line {
-    width: 30px;
+    width: 15px;
     height: 2px;
     background-color: #ccc;
     position: relative;
-    top: 10px; /* 对齐线条和按钮 */
+    top: 7.5px; /* 对齐线条和按钮 */
     z-index: 0;
+  }
+
+  .large .line{
+    width:30px;
   }
   
   /* 激活状态样式 */
   .active .circle-button {
-    transform: scale(1.2); /* 放大按钮 */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4); /* 更强烈的阴影 */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 更强烈的阴影 */
     border: 2px solid #999898; /* 添加深色边框 */
     background-color: lighten(currentColor, 20%); /* 背景颜色变亮 */
     z-index: 1;
+  }
+
+  .large .circle-button {
+    transform: scale(1.3); /* 放大按钮 */
   }
   
   /* 鼠标悬停样式 */
   .button-item:hover .circle-button {
     transform: scale(1.1); /* 放大按钮 */
     cursor: pointer;
+  }
+
+  .button-item.large:hover .circle-button {
+    transform: scale(1.4); /* 放大按钮 */
   }
   
   .legend {
