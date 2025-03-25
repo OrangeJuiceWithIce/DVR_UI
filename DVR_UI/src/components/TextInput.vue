@@ -1,7 +1,7 @@
 <template>
     <div class="text-input-container">
-      <label for="user-input">Text Input:</label>
-      <input type="text" id="user-input" v-model="userInput" placeholder="please input your text">
+      <label for="user-input">Query</label>
+      <input type="text" id="user-input" v-model="userInput" placeholder="describe or upload an image">
       <button @click="submitText">next step</button>
     </div>
   </template>

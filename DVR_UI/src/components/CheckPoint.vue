@@ -52,9 +52,9 @@
       return {
         checkpoints: [], // 检查点列表
         legend: [
-          { id: 1, color: '#FFCDD2', description: 'exploration' },
-          { id: 2, color: '#C8E6C9', description: 'styling' },
-          { id: 3, color: '#BBDEFB', description: 'fine-tuning' },
+          { id: 1, color: '#FFCDD2', description: 'Exploration' },
+          { id: 2, color: '#C8E6C9', description: 'Customization' },
+          { id: 3, color: '#BBDEFB', description: 'Refinement' },
         ],
       };
     },
