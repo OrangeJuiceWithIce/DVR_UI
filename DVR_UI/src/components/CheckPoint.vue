@@ -1,6 +1,6 @@
 <template>
-    <div class="container">
-      <!-- 颜色说明区域 -->
+    <!-- <div class="container"> -->
+      <!-- 颜色说明区域
       <div class="legend">
         <div
           v-for="item in legend"
@@ -13,7 +13,7 @@
           ></div>
           <span>{{ item.description }}</span>
         </div>
-      </div>
+      </div> -->
   
       <!-- 圆形按钮区域 -->
       <div class="button-group">
@@ -37,7 +37,7 @@
         </div>
         <span class="active-step">Current Step: {{ currentStep }}</span>
       </div>
-    </div>
+    <!-- </div> -->
   </template>
   
   <script>
@@ -100,7 +100,7 @@
   </script>
   
   <style scoped>
-  .container {
+  /* .container {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -108,17 +108,18 @@
     padding: 5px;
     max-width: 800px;
     margin: 0;
-  }
+  } */
   
   .button-group {
     display: flex;
     align-items: center;
+    width: 800px;
   }
   
   .button-items {
     display: flex;
     flex-direction: row;
-    width: 235px;
+    width:600px;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding:5px;
@@ -176,7 +177,7 @@
     transform: scale(1.4); /* 放大按钮 */
   }
   
-  .legend {
+  /* .legend {
     display: flex;
   }
   
@@ -192,7 +193,7 @@
     height: 20px;
     border-radius: 50%;
     margin-right: 10px;
-  }
+  } */
   
   .active-step {
     font-size: 16px;

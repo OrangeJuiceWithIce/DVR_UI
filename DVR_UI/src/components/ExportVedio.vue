@@ -20,6 +20,7 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin-right:60px;
 }
 
 button:hover {

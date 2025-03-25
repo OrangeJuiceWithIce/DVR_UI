@@ -3,12 +3,13 @@
     <div v-if="isLoading!=0" class="loading-overlay">
       <div class="loading-spinner"></div>
     </div>
-    <div class="input-and-checkpoint">
-      <!--检查点组件-->
-      <CheckPoint :currentStep="currentStep" @change-step="currentStepChange" ref="checkPoint"/>
+    <div class="input-and-checkpointEg">
+      <CheckPointEg class="checkpointeg"></CheckPointEg>
       <!-- 输入组件 -->
-      <TextInput @submitText="handleSubmitText"/>
+      <TextInput class="TextInput" @submitText="handleSubmitText"/>
     </div>
+    <!--检查点组件-->
+    <CheckPoint :currentStep="currentStep" @change-step="currentStepChange" ref="checkPoint"/>
     <!-- 结果展示组件 -->
     <ExplorationResults :results="results" :separateResults="separateResults"
     @activeImageChanged="activeImageChanged" 
@@ -25,6 +26,7 @@ import TextInput from './components/TextInput.vue';
 import ExplorationResults from './components/ExplorationResults.vue';
 import CheckPoint from './components/CheckPoint.vue';
 import ExportVedio from './components/ExportVedio.vue';
+import CheckPointEg from './components/CheckPointEg.vue';
 
 const baseURL = `http://10.130.136.14:${import.meta.env.VITE_BACKEND_PORT}`;
 
@@ -34,6 +36,7 @@ export default {
     ExplorationResults,
     CheckPoint,
     ExportVedio,
+    CheckPointEg,
   },
   data() {
     return {
@@ -513,9 +516,14 @@ export default {
   gap: 20px;
   padding: 20px;
 }
-.input-and-checkpoint {
+.input-and-checkpointEg {
   display: flex;
   align-items: center;
+  width:800px;
+}
+
+.checkpintEg{
+  margin-right: 0;
 }
 
 /* 半透明全屏遮罩层 */
