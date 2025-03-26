@@ -71,10 +71,12 @@ export default {
     // 监听 results 的变化，默认显示第一张图片
     results(newResults) {
       if (newResults.length > 0) {
-        this.activeId = newResults[0].id;
+        if(this.$parent.updateResultsFlag){
+          this.activeId = newResults[0].id;
+        }
         this.$emit('activeImageChanged', this.activeId);
       }
-    },
+    }
   },
   computed: {
     imgSrc() {
@@ -103,7 +105,6 @@ export default {
       }
     },
     setActiveGaussian(id) {
-      console.log(id)
       this.results.find(result => result.id === this.activeId).gaussians.forEach(gaussian => {
         if (gaussian.id === id) {
           gaussian.activate = !gaussian.activate;
@@ -160,7 +161,7 @@ export default {
   display: flex;
   gap: 20px;
   width: 800px; /* 固定容器宽度 */
-  height: 500px; /* 固定容器高度 */
+  height: 400px; /* 固定容器高度 */
   margin: 0 auto; /* 居中显示 */
 }
 

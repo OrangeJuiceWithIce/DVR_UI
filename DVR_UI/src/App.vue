@@ -17,7 +17,10 @@
     @filterGaussian="handleFilterGaussians"
     @handleWheel="handleZoom"
     />
-    <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
+    <div class="button-group">
+      <FileUpload></FileUpload>
+      <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
+    </div>
   </div>
 </template>
 
@@ -27,6 +30,7 @@ import ExplorationResults from './components/ExplorationResults.vue';
 import CheckPoint from './components/CheckPoint.vue';
 import ExportVedio from './components/ExportVedio.vue';
 import CheckPointEg from './components/CheckPointEg.vue';
+import FileUpload from './components/FileUpload.vue';
 
 const baseURL = `http://10.130.136.14:${import.meta.env.VITE_BACKEND_PORT}`;
 
@@ -37,6 +41,7 @@ export default {
     CheckPoint,
     ExportVedio,
     CheckPointEg,
+    FileUpload,
   },
   data() {
     return {
@@ -49,6 +54,7 @@ export default {
       isLoading:0, // 不在加载中
       checkPointIDList:[],//后端已有存储检查点ID列表
       save_interval:null,//后端保存checkpoint的间隔
+      updateResultsFlag: true,
 
       ifPartialIMage:false,//是否是局部图片
     };
@@ -85,17 +91,17 @@ export default {
           return;
         }
         else{
-          this.handleGetExplorationResults();//explore
+          await this.handleGetExplorationResults();//explore
           sort=1;
         }
       }
       else{
         if(ifAllActivated){
-          this.handleGetTextStyleGuideResults();//text guide
+          await this.handleGetTextStyleGuideResults();//text guide
           sort=2;
         }
         else{
-          this.handleTextRegionGuide(); //text and region guide
+          await this.handleTextRegionGuide(); //text and region guide
           sort=3;
         }
       }
@@ -126,7 +132,6 @@ export default {
         }
         const data = await response.json();
         this.checkPointIDList=data.results;
-        console.log(this.checkPointIDList);
         if(this.checkPointIDList.length>1){
           this.save_interval=this.checkPointIDList[1].iteration-this.checkPointIDList[0].iteration;
           for (let i = 0; i < this.checkPointIDList.length; i++) {
@@ -218,6 +223,7 @@ export default {
     //api 4
     async handleRotate(x,y){
       this.isLoading+=1;
+      this.updateResultsFlag=false;
       try{
         const response = await fetch(`${baseURL}/api/rotate`, {
           method: 'POST',
@@ -246,6 +252,7 @@ export default {
         alert('Failed to rotate. Please check the server URL and try again.');
       }finally{
         this.isLoading-=1;
+        this.updateResultsFlag=true;
       }
     },
     //api 5
@@ -258,6 +265,7 @@ export default {
         delta=0.1;
       }
       this.isLoading+=1;
+      this.updateResultsFlag=false;
       try{
         const response = await fetch(`${baseURL}/api/zoom`, {
           method: 'POST',
@@ -283,6 +291,7 @@ export default {
         alert('Failed to zoom. Please check the server URL and try again.');
       }finally{
         this.isLoading-=1;
+        this.updateResultsFlag=true;
       }
     },
     //api 6
@@ -335,11 +344,9 @@ export default {
         this.results.find(result=>result.id===this.activeId).gaussians.forEach(gaussian=>{
           if(filterResults.includes(gaussian.id)){
             gaussian.activate=true;
-            console.log(gaussian.id);
           }
           else{
             gaussian.activate=false;
-            console.log(gaussian.id);
           }
         });
       }catch(error){
@@ -400,6 +407,7 @@ export default {
         }
         const data = await response.json();
         this.results = data.results; // 更新结果数据
+        console.log(this.results);
         this.separateResults=[];
       }catch(error){
         console.error('Error fetching population checkpoint:', error);
@@ -550,6 +558,11 @@ export default {
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite; /* 旋转动画 */
+}
+
+.button-group{
+  display: flex;
+  flex-direction:row;
 }
 
 /* 旋转动画关键帧 */
