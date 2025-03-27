@@ -10,16 +10,15 @@
     </div>
     <!--检查点组件-->
     <CheckPoint :currentStep="currentStep" @change-step="currentStepChange" ref="checkPoint"/>
-    <!-- 结果展示组件 -->
-    <ExplorationResults :results="results" :separateResults="separateResults"
-    @activeImageChanged="activeImageChanged" 
-    @activeGaussianChanged="activeGaussianChanged"
-    @filterGaussian="handleFilterGaussians"
-    @handleWheel="handleZoom"
-    />
-    <div class="button-group">
-      <FileUpload></FileUpload>
-      <ExportVedio @exportVideo="handleExportVideo"></ExportVedio>
+    <div class="results-and-export">
+      <!-- 结果展示组件 -->
+      <ExplorationResults :results="results" :separateResults="separateResults"
+      @activeImageChanged="activeImageChanged" 
+      @activeGaussianChanged="activeGaussianChanged"
+      @filterGaussian="handleFilterGaussians"
+      @handleWheel="handleZoom"
+      />
+      <ExportVedio class="Export-Button" @exportVideo="handleExportVideo"></ExportVedio>
     </div>
   </div>
 </template>
@@ -30,7 +29,6 @@ import ExplorationResults from './components/ExplorationResults.vue';
 import CheckPoint from './components/CheckPoint.vue';
 import ExportVedio from './components/ExportVedio.vue';
 import CheckPointEg from './components/CheckPointEg.vue';
-import FileUpload from './components/FileUpload.vue';
 
 const baseURL = `http://10.130.136.14:${import.meta.env.VITE_BACKEND_PORT}`;
 
@@ -41,7 +39,6 @@ export default {
     CheckPoint,
     ExportVedio,
     CheckPointEg,
-    FileUpload,
   },
   data() {
     return {
@@ -136,13 +133,17 @@ export default {
           this.save_interval=this.checkPointIDList[1].iteration-this.checkPointIDList[0].iteration;
           for (let i = 0; i < this.checkPointIDList.length; i++) {
             let step=this.checkPointIDList[i].iteration/this.save_interval;
-            let sort=this.getMode(this.checkPointIDList[i].mode)
-            this.$refs.checkPoint.addCheckPoint(sort,step); // 添加检查点
+            if(i==0){
+              this.$refs.checkPoint.addCheckPoint(0,step); // 添加检查点
+            }
+            else{
+              let sort=this.getMode(this.checkPointIDList[i].mode)
+              this.$refs.checkPoint.addCheckPoint(sort,step); // 添加检查点
+            }
           }
         }
         else if(this.checkPointIDList.length===1){
-          let sort=this.getMode(this.checkPointIDList[0].mode)
-          this.$refs.checkPoint.addCheckPoint(1,0); // 添加检查点
+          this.$refs.checkPoint.addCheckPoint(0,0); // 添加检查点
         }
 
         if(this.checkPointIDList.length>0){
@@ -530,6 +531,17 @@ export default {
   width:800px;
 }
 
+.results-and-export {
+  position: relative; /* 设置为相对定位 */
+}
+
+.Export-Button{
+  position: absolute;
+  bottom: 10px; /* 距离底部的距离 */
+  right: 240px; /* 距离右侧的距离 */
+  z-index: 10; /* 确保按钮在最上层 */
+}
+
 .checkpintEg{
   margin-right: 0;
 }
@@ -558,11 +570,6 @@ export default {
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite; /* 旋转动画 */
-}
-
-.button-group{
-  display: flex;
-  flex-direction:row;
 }
 
 /* 旋转动画关键帧 */

@@ -31,7 +31,7 @@
 
 <style scoped>
   .legend {
-    margin-right: 40px;
+    margin-right: 30px;
     padding-top: 7px;
     display: flex;
   }

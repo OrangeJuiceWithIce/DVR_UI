@@ -165,21 +165,21 @@ export default {
   margin: 0 auto; /* 居中显示 */
 }
 
-.thumbnail-list {
+.thumbnail-list,.gaussian-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
   width: 150px; /* 固定宽度 */
   height: 400px; /* 固定高度 */
   overflow-y: auto; /* 允许垂直滚动 */
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 5px;
   border-radius: 5px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.thumbnail-item {
+.thumbnail-item , .gaussian-item {
   position: relative; /* 确保标注的绝对定位是相对于这个容器 */
   width: 120px; /* 固定宽度 */
   height: 120px; /* 固定高度 */
@@ -208,7 +208,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid #343131;
+  border: 1px solid #ccc;
   padding: 0;
   border-radius: 10px;
   width: 400px; /* 固定宽度 */
@@ -223,30 +223,6 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   object-fit: contain; /* 保持图片比例 */
-}
-
-.gaussian-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 150px; /* 固定宽度 */
-  height: 400px; /* 固定高度 */
-  overflow-y: auto; /* 允许垂直滚动 */
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.gaussian-item {
-  position: relative; /* 确保标注的绝对定位是相对于这个容器 */
-  width: 120px; /* 固定宽度 */
-  height: 120px; /* 固定高度 */
-  cursor: pointer;
-  border: 3px solid transparent;
-  border-radius: 5px;
-  transition: border-color 0.3s ease;
 }
 
 .gaussian-item.active {

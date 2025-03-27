@@ -52,6 +52,7 @@
       return {
         checkpoints: [], // 检查点列表
         legend: [
+          { id: 0, color: '#CCCCCC',description: 'Start' },
           { id: 1, color: '#FFCDD2', description: 'Exploration' },
           { id: 2, color: '#C8E6C9', description: 'Customization' },
           { id: 3, color: '#BBDEFB', description: 'Refinement' },
@@ -66,7 +67,7 @@
         // 清除当前步骤之后的所有检查点
         this.checkpoints = this.checkpoints.filter(cp => cp.id < step);
         // 添加新的检查点
-        const newCheckpoint = this.legend[sort-1];
+        const newCheckpoint = this.legend[sort];
         this.checkpoints.push({
           id: step,
           color: newCheckpoint.color,
@@ -113,16 +114,17 @@
   .button-group {
     display: flex;
     align-items: center;
-    width: 800px;
+    width: 740px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding-right:10px;
+    justify-content: space-between;
   }
   
   .button-items {
     display: flex;
     flex-direction: row;
-    width:600px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding:5px;
+    padding:10px;
     height:45px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -143,7 +145,7 @@
   }
   
   .line {
-    width: 15px;
+    width: 10px;
     height: 2px;
     background-color: #ccc;
     position: relative;
@@ -196,6 +198,7 @@
   } */
   
   .active-step {
+    width:120px;
     font-size: 16px;
     margin-left: 10px;
   }
